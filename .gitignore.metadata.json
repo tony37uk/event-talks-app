@@ -1,0 +1,4 @@
+{
+  "summary": "Gitignore file for the Flask application to prevent committing cache files, virtual environments, and system logs.",
+  "updatedAt": "2026-06-15T21:55:23.158353800Z"
+}

@@ -1,0 +1,5 @@
+{
+  "summary": "Frontend JavaScript application for fetching, searching, and filtering BigQuery release notes. Handles dark mode toggling, DOM rendering, and Twitter sharing flow.",
+  "updatedAt": "2026-06-15T21:43:02.920921200Z",
+  "userFacing": true
+}

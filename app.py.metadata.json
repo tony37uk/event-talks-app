@@ -1,0 +1,5 @@
+{
+  "summary": "Main Flask app.py that parses BigQuery release notes feed and exposes a JSON API.",
+  "updatedAt": "2026-06-15T21:42:39.604497500Z",
+  "userFacing": true
+}
