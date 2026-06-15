@@ -117,9 +117,51 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     // ==========================================================================
+    // Filter Badge Counts
+    // ==========================================================================
+    const updateFilterCounts = () => {
+        const counts = {
+            ALL: 0,
+            Feature: 0,
+            Change: 0,
+            Breaking: 0,
+            Announcement: 0,
+            Issue: 0
+        };
+
+        releaseNotes.forEach(note => {
+            const rawContent = stripHtml(note.content).toLowerCase();
+            const rawTitle = note.date.toLowerCase();
+            const rawCat = note.category.toLowerCase();
+            const query = searchQuery.toLowerCase();
+            
+            const matchesSearch = rawContent.includes(query) || rawTitle.includes(query) || rawCat.includes(query);
+            
+            if (matchesSearch) {
+                counts.ALL++;
+                if (counts[note.category] !== undefined) {
+                    counts[note.category]++;
+                }
+            }
+        });
+
+        // Update DOM elements for count badges
+        document.querySelectorAll('.filter-pills .pill').forEach(pill => {
+            const cat = pill.getAttribute('data-category');
+            const countSpan = pill.querySelector('.pill-count');
+            if (countSpan) {
+                countSpan.textContent = counts[cat] !== undefined ? counts[cat] : 0;
+            }
+        });
+    };
+
+    // ==========================================================================
     // Rendering Logic
     // ==========================================================================
     const renderFeed = () => {
+        // Update category counts dynamically based on search query
+        updateFilterCounts();
+
         // Filter and search
         const filteredNotes = releaseNotes.filter(note => {
             const matchesCategory = activeCategory === 'ALL' || note.category.toLowerCase() === activeCategory.toLowerCase();

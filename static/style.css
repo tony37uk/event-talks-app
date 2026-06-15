@@ -1149,3 +1149,28 @@ input:checked + .theme-slider:before {
     to { transform: rotate(180deg); }
 }
 
+/* Category filter badge count */
+.pill-count {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background-color: rgba(255, 255, 255, 0.08);
+    color: var(--text-secondary);
+    font-size: 0.72rem;
+    font-weight: 600;
+    padding: 0.12rem 0.45rem;
+    border-radius: var(--radius-sm);
+    margin-left: 0.45rem;
+    transition: background-color var(--transition-fast), color var(--transition-fast);
+}
+
+[data-theme="light"] .pill-count {
+    background-color: rgba(15, 23, 42, 0.06);
+}
+
+.pill.active .pill-count {
+    background-color: var(--accent-btn-text);
+    color: var(--accent-color);
+}
+
+
