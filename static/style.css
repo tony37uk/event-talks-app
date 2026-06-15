@@ -1055,3 +1055,97 @@ body {
         align-self: flex-end;
     }
 }
+
+/* ==========================================================================
+   Added Features: Copy, Export, & Theme Toggle Switch
+   ========================================================================== */
+
+/* Theme Toggle Switch Slider */
+.theme-switch-container {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.45rem 0.85rem;
+    border-radius: var(--radius-md);
+    background-color: var(--card-bg);
+    border: 1px solid var(--card-border);
+    backdrop-filter: blur(10px);
+    transition: background-color var(--transition-fast), border-color var(--transition-fast);
+}
+
+.theme-switch {
+    position: relative;
+    display: inline-block;
+    width: 36px;
+    height: 20px;
+}
+
+.theme-switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.theme-slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: var(--input-border);
+    transition: var(--transition-normal);
+    border-radius: 20px;
+}
+
+.theme-slider:before {
+    position: absolute;
+    content: "";
+    height: 14px;
+    width: 14px;
+    left: 3px;
+    bottom: 3px;
+    background-color: var(--text-primary);
+    transition: var(--transition-normal);
+    border-radius: 50%;
+}
+
+input:checked + .theme-slider {
+    background-color: var(--accent-color);
+}
+
+input:checked + .theme-slider:before {
+    transform: translateX(16px);
+    background-color: var(--accent-btn-text);
+}
+
+.sun-icon-small, .moon-icon-small {
+    color: var(--text-muted);
+    transition: color var(--transition-fast);
+}
+
+[data-theme="light"] .sun-icon-small {
+    color: var(--accent-color);
+}
+
+[data-theme="dark"] .moon-icon-small {
+    color: var(--accent-color);
+}
+
+/* Copy feedback button */
+.btn-copy.copied {
+    border-color: #10b981;
+    color: #10b981;
+    background-color: rgba(16, 185, 129, 0.05);
+}
+
+/* Rotating utility class for theme toggling micro-animation */
+.rotating {
+    animation: rotate-switch 0.4s ease-out;
+}
+
+@keyframes rotate-switch {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(180deg); }
+}
+

@@ -20,7 +20,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const refreshBtn = document.getElementById('refresh-btn');
     const retryBtn = document.getElementById('retry-btn');
     const resetFiltersBtn = document.getElementById('reset-filters-btn');
-    const themeToggleBtn = document.getElementById('theme-toggle-btn');
+    const themeToggleCheckbox = document.getElementById('theme-toggle-checkbox');
+    const themeSwitchContainer = document.querySelector('.theme-switch-container');
+    const exportCsvBtn = document.getElementById('export-csv-btn');
     const categoryPills = document.getElementById('category-pills');
 
     // Modal Elements
@@ -40,17 +42,17 @@ document.addEventListener('DOMContentLoaded', () => {
     const initTheme = () => {
         const savedTheme = localStorage.getItem('theme') || 'dark';
         document.documentElement.setAttribute('data-theme', savedTheme);
+        themeToggleCheckbox.checked = (savedTheme === 'light');
     };
 
-    themeToggleBtn.addEventListener('click', () => {
-        const currentTheme = document.documentElement.getAttribute('data-theme');
-        const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+    themeToggleCheckbox.addEventListener('change', () => {
+        const newTheme = themeToggleCheckbox.checked ? 'light' : 'dark';
         document.documentElement.setAttribute('data-theme', newTheme);
         localStorage.setItem('theme', newTheme);
         
         // Add a micro-animation class on toggle
-        themeToggleBtn.classList.add('rotating');
-        setTimeout(() => themeToggleBtn.classList.remove('rotating'), 500);
+        themeSwitchContainer.classList.add('rotating');
+        setTimeout(() => themeSwitchContainer.classList.remove('rotating'), 500);
     });
 
     // ==========================================================================
@@ -175,6 +177,33 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (note) openTweetModal(note);
             });
         });
+
+        // Re-attach event listeners to Copy buttons
+        document.querySelectorAll('.btn-copy').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const button = e.currentTarget;
+                const noteId = button.getAttribute('data-id');
+                const note = releaseNotes.find(n => n.id === noteId);
+                if (note) {
+                    const plainText = stripHtml(note.content).trim();
+                    const textToCopy = `🚀 BigQuery Update (${note.date}): [${note.category.toUpperCase()}]\n\n${plainText}\n\nDetails: ${note.link || 'https://cloud.google.com/bigquery'}`;
+                    
+                    navigator.clipboard.writeText(textToCopy).then(() => {
+                        const textSpan = button.querySelector('.copy-btn-text');
+                        const originalText = textSpan.textContent;
+                        button.classList.add('copied');
+                        textSpan.textContent = 'Copied!';
+                        
+                        setTimeout(() => {
+                            button.classList.remove('copied');
+                            textSpan.textContent = originalText;
+                        }, 2000);
+                    }).catch(err => {
+                        console.error('Could not copy text: ', err);
+                    });
+                }
+            });
+        });
     };
 
     const renderCard = (note) => {
@@ -194,6 +223,13 @@ document.addEventListener('DOMContentLoaded', () => {
                                 <span>Docs</span>
                             </a>
                         ` : ''}
+                        <button class="btn-icon-text btn-copy" data-id="${note.id}" title="Copy description to clipboard">
+                            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                            </svg>
+                            <span class="copy-btn-text">Copy</span>
+                        </button>
                         <button class="btn-icon-text btn-tweet" data-id="${note.id}" title="Share this update on Twitter / X">
                             <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor">
                                 <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
@@ -332,6 +368,53 @@ document.addEventListener('DOMContentLoaded', () => {
             closeTweetModal();
         }
     });
+
+    // ==========================================================================
+    // Export to CSV Flow
+    // ==========================================================================
+    const getFilteredNotesList = () => {
+        return releaseNotes.filter(note => {
+            const matchesCategory = activeCategory === 'ALL' || note.category.toLowerCase() === activeCategory.toLowerCase();
+            
+            const rawContent = stripHtml(note.content).toLowerCase();
+            const rawTitle = note.date.toLowerCase();
+            const rawCat = note.category.toLowerCase();
+            const query = searchQuery.toLowerCase();
+            
+            const matchesSearch = rawContent.includes(query) || rawTitle.includes(query) || rawCat.includes(query);
+            
+            return matchesCategory && matchesSearch;
+        });
+    };
+
+    const exportToCSV = () => {
+        const filtered = getFilteredNotesList();
+        if (filtered.length === 0) return;
+        
+        const headers = ['Date', 'Category', 'Description', 'Link'];
+        const rows = filtered.map(note => [
+            note.date,
+            note.category,
+            stripHtml(note.content).trim().replace(/\s+/g, ' ').replace(/"/g, '""'), // escape quotes and clean whitespace
+            note.link || ''
+        ]);
+        
+        const csvContent = [
+            headers.join(','),
+            ...rows.map(r => r.map(val => `"${val}"`).join(','))
+        ].join('\r\n');
+        
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.setAttribute("href", url);
+        link.setAttribute("download", `bigquery_release_notes_${new Date().toISOString().slice(0, 10)}.csv`);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    };
+
+    exportCsvBtn.addEventListener('click', exportToCSV);
 
     // ==========================================================================
     // Initial Setup
